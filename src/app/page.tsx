@@ -151,7 +151,7 @@ export default function Home() {
 
   return (
     <div className='content-wrapper min-h-screen bg-[#111111] text-[#FFFFFF] font-sans'>
-      <header className='max-w-4xl mx-auto pt-8 px-4 text-center'>
+      <header className='max-w-4xl mx-auto pt-8 px-4 text-center relative z-1'>
         <div className='relative w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 border border-[#E5E5E5]/20'>
           <Image src={rifaConfig.imagemBanner} alt='Banner Rifa' layout='fill' objectFit='cover' priority />
         </div>
@@ -160,12 +160,12 @@ export default function Home() {
         <div className='inline-block bg-[#C1121F] text-[#FFFFFF] px-6 py-2 rounded-full font-bold text-xl shadow-lg mb-8'>Preço por número: {rifaConfig.preco}€</div>
       </header>
 
-      <div className='side-bar bar-left'></div>
-      <div className='side-bar bar-left-2'></div>
-      <div className='side-bar bar-right'></div>
-      <div className='side-bar bar-right-2'></div>
+      <div className='side-stripes stripe-left'></div>
+      <div className='side-stripes stripe-left-2'></div>
+      <div className='side-stripes stripe-right'></div>
+      <div className='side-stripes stripe-right-2'></div>
 
-      <main className='max-w-4xl mx-auto px-4 pb-16'>
+      <main className='max-w-4xl mx-auto px-4 pb-16 relative z-1'>
         <div className='bg-[#FFFFFF] text-[#111111] p-6 rounded-2xl shadow-2xl'>
           <h2 className='text-xl font-bold mb-4 text-center uppercase tracking-wide'>Escolha o seu número (1 a 100)</h2>
 

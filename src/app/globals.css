@@ -44,7 +44,7 @@ body {
   z-index: 0;
 } */
 
-.side-bar {
+.side-stripes {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -53,19 +53,25 @@ body {
   z-index: 0;
   /* opacity: 0.4; */
 
-  &.bar-left {
+  &.stripe-left {
     left: 20px;
   }
 
-  &.bar-left-2 {
+  &.stripe-left-2 {
     left: 70px;
   }
 
-  &.bar-right {
+  &.stripe-right {
     right: 20px;
   }
 
-  &.bar-right-2 {
+  &.stripe-right-2 {
     right: 70px;
+  }
+}
+
+@media (max-width: 768px) {
+  .side-stripes {
+    display: none;
   }
 }
