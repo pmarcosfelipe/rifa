@@ -1,217 +1,5 @@
 'use client';
 
-// import { useEffect, useMemo, useState } from 'react';
-// import { numberPool, siteConfig } from '@/lib/config';
-// import type { RaffleEntry } from '@/lib/googleSheets';
-
-// const statusLabels = {
-//   available: 'Disponível',
-//   reserved: 'Reservado',
-//   pending: 'Aguardando confirmação',
-//   paid: 'Confirmado',
-// };
-
-// export default function AdminPage() {
-//   const [loggedIn, setLoggedIn] = useState(false);
-//   const [email, setEmail] = useState('');
-//   const [password, setPassword] = useState('');
-//   const [entries, setEntries] = useState<RaffleEntry[]>([]);
-//   const [selected, setSelected] = useState<RaffleEntry | null>(null);
-//   const [search, setSearch] = useState('');
-//   const [errorMessage, setErrorMessage] = useState('');
-
-//   const loadEntries = async () => {
-//     try {
-//       const res = await fetch('/api/google-sheets', { cache: 'no-store' });
-//       if (!res.ok) {
-//         setEntries([]);
-//         return;
-//       }
-
-//       const text = await res.text();
-//       if (!text) {
-//         setEntries([]);
-//         return;
-//       }
-
-//       const data = JSON.parse(text);
-//       setEntries(data.entries || []);
-//     } catch {
-//       setEntries([]);
-//     }
-//   };
-
-//   useEffect(() => {
-//     loadEntries();
-//     const interval = setInterval(() => {
-//       loadEntries();
-//     }, 5000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   const filtered = useMemo(() => {
-//     const term = search.toLowerCase();
-//     return entries.filter((entry) => {
-//       return [String(entry.number), entry.name, entry.phone].some((value) => value?.toLowerCase().includes(term));
-//     });
-//   }, [entries, search]);
-
-//   const handleLogin = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setErrorMessage('');
-//     const res = await fetch('/api/admin', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ action: 'login', email, password }),
-//     });
-
-//     if (res.ok) {
-//       setLoggedIn(true);
-//       setPassword('');
-//       await loadEntries();
-//     } else {
-//       setErrorMessage('Email ou palavra-passe inválidos.');
-//     }
-//   };
-
-//   const changeStatus = async (id: string, status: 'paid' | 'available') => {
-//     const selectedEntry = entries.find((entry) => entry.id === id || entry.number === Number(id));
-//     const res = await fetch('/api/admin', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({
-//         action: 'update',
-//         id,
-//         number: selectedEntry?.number ?? Number(id),
-//         status,
-//         name: selectedEntry?.name ?? '',
-//         phone: selectedEntry?.phone ?? '',
-//         group: selectedEntry?.group ?? '',
-//         proof_url: selectedEntry?.proof_url ?? '',
-//         reserved_at: selectedEntry?.reserved_at ?? null,
-//       }),
-//     });
-
-//     const data = await res.json().catch(() => ({}));
-
-//     if (res.ok) {
-//       await loadEntries();
-//       setSelected(null);
-//       setErrorMessage('');
-//     } else {
-//       setErrorMessage(data.error || 'Não foi possível atualizar o estado.');
-//     }
-//   };
-
-//   if (!loggedIn) {
-//     return (
-//       <main className='min-h-screen bg-[#111111] p-6 text-white'>
-//         <div className='mx-auto flex max-w-md flex-col gap-4 rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl'>
-//           <p className='text-sm uppercase tracking-[0.3em] text-[#E5E5E5]'>Acesso seguro</p>
-//           <h1 className='text-2xl font-semibold'>Painel administrativo</h1>
-//           <form onSubmit={handleLogin} className='flex flex-col gap-3'>
-//             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder='Email' className='rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white' />
-//             <input
-//               value={password}
-//               onChange={(e) => setPassword(e.target.value)}
-//               type='password'
-//               placeholder='Palavra-passe'
-//               className='rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-white'
-//             />
-//             {errorMessage ? <p className='text-sm text-[#E5E5E5]'>{errorMessage}</p> : null}
-//             <button type='submit' className='rounded-xl bg-[#C1121F] px-4 py-2 font-semibold text-white'>
-//               Entrar
-//             </button>
-//           </form>
-//         </div>
-//       </main>
-//     );
-//   }
-
-//   return (
-//     <main className='min-h-screen bg-[#111111] p-4 text-white md:p-8'>
-//       <div className='mx-auto flex max-w-7xl flex-col gap-6'>
-//         <div className='flex flex-col gap-3 rounded-3xl border border-white/10 bg-white/10 p-6 md:flex-row md:items-center md:justify-between'>
-//           <div>
-//             <p className='text-sm uppercase tracking-[0.3em] text-[#E5E5E5]'>Administração</p>
-//             <h1 className='text-3xl font-semibold'>{siteConfig.title}</h1>
-//           </div>
-//           <input
-//             value={search}
-//             onChange={(e) => setSearch(e.target.value)}
-//             placeholder='Pesquisar por número, nome ou telemóvel'
-//             className='rounded-xl border border-white/10 bg-black/30 px-3 py-2 md:w-96'
-//           />
-//         </div>
-
-//         <div className='grid gap-6 lg:grid-cols-[1.6fr_0.8fr]'>
-//           <div className='grid grid-cols-10 gap-2 rounded-3xl border border-white/10 bg-white/5 p-4'>
-//             {numberPool.map((number) => {
-//               const entry = filtered.find((item) => item.number === number) || entries.find((item) => item.number === number);
-//               const stateClass =
-//                 entry?.status === 'paid' ? 'bg-[#111111] text-white' : entry?.status === 'reserved' || entry?.status === 'pending' ? 'bg-[#C1121F] text-white' : 'bg-white text-[#111111]';
-
-//               return (
-//                 <button key={number} onClick={() => setSelected(entry || null)} className={`aspect-square rounded-xl border border-[#E5E5E5] p-1 text-sm font-semibold ${stateClass}`}>
-//                   {number}
-//                 </button>
-//               );
-//             })}
-//           </div>
-
-//           <aside className='rounded-3xl border border-white/10 bg-white/10 p-4'>
-//             {selected ? (
-//               <div className='flex flex-col gap-4'>
-//                 <div>
-//                   <p className='text-sm uppercase tracking-[0.3em] text-[#E5E5E5]'>Reserva selecionada</p>
-//                   <h2 className='text-2xl font-semibold'>Número {selected.number}</h2>
-//                 </div>
-//                 <div className='rounded-2xl bg-black/20 p-3 text-sm'>
-//                   <p>
-//                     <strong>Nome:</strong> {selected.name || '—'}
-//                   </p>
-//                   <p>
-//                     <strong>Telemóvel:</strong> {selected.phone || '—'}
-//                   </p>
-//                   <p>
-//                     <strong>Grupo:</strong> {selected.group || '—'}
-//                   </p>
-//                   <p>
-//                     <strong>Estado:</strong> {statusLabels[selected.status as keyof typeof statusLabels] || selected.status}
-//                   </p>
-//                   <p>
-//                     <strong>Reserva:</strong> {selected.reserved_at ? new Date(selected.reserved_at).toLocaleString('pt-PT') : '—'}
-//                   </p>
-//                   <p>
-//                     <strong>Comprovativo:</strong>{' '}
-//                     {selected.proof_url ? (
-//                       <a className='text-[#E5E5E5] underline' href={selected.proof_url} target='_blank'>
-//                         Ver
-//                       </a>
-//                     ) : (
-//                       'Não enviado'
-//                     )}
-//                   </p>
-//                 </div>
-//                 <div className='flex flex-col gap-2'>
-//                   <button onClick={() => changeStatus(selected.id, 'paid')} className='rounded-xl bg-[#111111] px-4 py-2 font-semibold text-white'>
-//                     Confirmar pagamento
-//                   </button>
-//                   <button onClick={() => changeStatus(selected.id, 'available')} className='rounded-xl bg-[#C1121F] px-4 py-2 font-semibold text-white'>
-//                     Cancelar reserva
-//                   </button>
-//                 </div>
-//               </div>
-//             ) : (
-//               <div className='text-sm text-[#E5E5E5]'>Clique num número para ver os detalhes da reserva.</div>
-//             )}
-//           </aside>
-//         </div>
-//       </div>
-//     </main>
-//   );
-// }
-
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabaseClient';
@@ -356,8 +144,8 @@ export default function PainelAdministrativo() {
       <div className='max-w-5xl mx-auto space-y-6'>
         <div className='flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#FFFFFF] text-[#111111] p-6 rounded-2xl'>
           <div>
-            <h1 className='text-2xl font-black uppercase'>Painel de Controlo da Rifa</h1>
-            <p className='text-xs text-[#111111]/70'>Gestão simplificada de reservas e pagamentos</p>
+            <h1 className='text-2xl font-black uppercase'>Painel de Controle da Rifa</h1>
+            <p className='text-xs text-[#111111]/70'>Gestão de reservas e pagamentos</p>
           </div>
           <button onClick={handleLogout} className='bg-[#C1121F] text-[#FFFFFF] px-4 py-2 rounded-lg font-bold text-sm'>
             Sair
@@ -396,6 +184,93 @@ export default function PainelAdministrativo() {
       </div>
 
       {itemSelecionado && (
+        <div className='fixed inset-0 bg-[#111111]/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto'>
+          <div className='bg-[#FFFFFF] text-[#111111] rounded-2xl p-6 max-w-2xl w-full shadow-2xl border border-[#E5E5E5] space-y-4 my-8 max-h-[90vh] flex flex-col'>
+            {/* Cabeçalho do Modal */}
+            <div className='flex justify-between items-center border-b border-[#E5E5E5] pb-3 shrink-0'>
+              <h3 className='text-xl font-black'>Detalhes do Número #{itemSelecionado.numero}</h3>
+              <button onClick={() => setItemSelecionado(null)} className='font-bold text-[#111111] text-2xl hover:opacity-75'>
+                &times;
+              </button>
+            </div>
+
+            {/* Conteúdo com Scroll */}
+            <div className='space-y-4 overflow-y-auto pr-1 grow'>
+              {/* Informações da Reserva */}
+              <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm bg-[#E5E5E5]/30 p-4 rounded-xl border border-[#E5E5E5]'>
+                <p>
+                  <strong>Estado:</strong> <span className='uppercase font-bold'>{itemSelecionado.estado}</span>
+                </p>
+                <p>
+                  <strong>Nome:</strong> {itemSelecionado.nome || 'N/A'}
+                </p>
+                <p>
+                  <strong>Telemóvel:</strong> {itemSelecionado.telemovel || 'N/A'}
+                </p>
+                <p>
+                  <strong>Grupo:</strong> {itemSelecionado.grupo || 'N/A'}
+                </p>
+                <p className='sm:col-span-2'>
+                  <strong>Data da Reserva:</strong> {itemSelecionado.data_reserva ? new Date(itemSelecionado.data_reserva).toLocaleString('pt-PT') : 'N/A'}
+                </p>
+              </div>
+
+              {/* Visualizador do Comprovativo (PDF ou Imagem) */}
+              {itemSelecionado.comprovativo_url ? (
+                <div className='pt-2'>
+                  <div className='flex justify-between items-center mb-2'>
+                    <strong className='text-sm'>Comprovativo Enviado:</strong>
+                    <a href={itemSelecionado.comprovativo_url} target='_blank' rel='noopener noreferrer' className='text-xs text-[#C1121F] underline font-bold'>
+                      Abrir num novo separador ↗
+                    </a>
+                  </div>
+
+                  <div className='border-2 border-[#E5E5E5] rounded-xl overflow-hidden bg-[#111111]/5 min-h-[350px] flex items-center justify-center'>
+                    {itemSelecionado.comprovativo_url.toLowerCase().includes('.pdf') ? (
+                      /* Exibição em Incorporado para PDF */
+                      <iframe src={`${itemSelecionado.comprovativo_url}#toolbar=0`} title={`Comprovativo do número ${itemSelecionado.numero}`} className='w-full h-[400px] border-0' />
+                    ) : (
+                      /* Exibição para Imagens (JPG / PNG) */
+                      <img src={itemSelecionado.comprovativo_url} alt={`Comprovativo do número ${itemSelecionado.numero}`} className='max-h-[400px] w-auto object-contain mx-auto py-2' />
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className='p-4 bg-[#E5E5E5]/20 text-center rounded-xl text-xs text-[#111111]/60 font-semibold'>Nenhum comprovativo enviado até ao momento.</div>
+              )}
+            </div>
+
+            {/* Botões de Ação */}
+            <div className='pt-4 border-t border-[#E5E5E5] flex flex-col gap-2 shrink-0'>
+              {itemSelecionado.estado !== 'disponivel' && (
+                <>
+                  {itemSelecionado.estado !== 'confirmado' && (
+                    <button
+                      onClick={() => confirmarPagamento(itemSelecionado.numero)}
+                      disabled={carregando}
+                      className='w-full py-3 bg-[#111111] text-[#FFFFFF] font-bold rounded-lg hover:opacity-90 transition-opacity'
+                    >
+                      {carregando ? 'A processar...' : 'Confirmar Pagamento'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => cancelarReserva(itemSelecionado.numero)}
+                    disabled={carregando}
+                    className='w-full py-3 bg-[#C1121F] text-[#FFFFFF] font-bold rounded-lg hover:opacity-90 transition-opacity'
+                  >
+                    {carregando ? 'A processar...' : 'Cancelar Reserva'}
+                  </button>
+                </>
+              )}
+              <button onClick={() => setItemSelecionado(null)} className='w-full py-2 bg-[#E5E5E5] text-[#111111] font-bold rounded-lg hover:bg-gray-300'>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* {itemSelecionado && (
         <div className='fixed inset-0 bg-[#111111]/80 backdrop-blur-sm flex items-center justify-center p-4 z-50'>
           <div className='bg-[#FFFFFF] text-[#111111] rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#E5E5E5] space-y-4'>
             <div className='flex justify-between items-center border-b border-[#E5E5E5] pb-3'>
@@ -458,7 +333,7 @@ export default function PainelAdministrativo() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

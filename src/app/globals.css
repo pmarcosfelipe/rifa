@@ -21,3 +21,51 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.content-wrapper {
+  /* position: relative; */
+  /* z-index: 1; */
+}
+
+/* .content-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background-image: url('../../public/fiel-lisboa-removebg-preview.png');
+  background-position: center 30%;
+  background-repeat: no-repeat;
+  background-size: 50%;
+
+  opacity: 0.1;
+  z-index: 0;
+} */
+
+.side-bar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background-color: #ffffff;
+  z-index: 0;
+  /* opacity: 0.4; */
+
+  &.bar-left {
+    left: 20px;
+  }
+
+  &.bar-left-2 {
+    left: 70px;
+  }
+
+  &.bar-right {
+    right: 20px;
+  }
+
+  &.bar-right-2 {
+    right: 70px;
+  }
+}

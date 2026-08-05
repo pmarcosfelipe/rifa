@@ -1,267 +1,5 @@
 'use client';
 
-// import Image from 'next/image';
-// import Link from 'next/link';
-// import { useEffect, useState } from 'react';
-// import { numberPool, siteConfig } from '@/lib/config';
-// import type { RaffleEntry } from '@/lib/googleSheets';
-
-// const reserveDuration = 30 * 60;
-// const raffleTitle = 'Rifa Solidária';
-// const raffleDescription = 'A sua oportunidade de apoiar a causa com um número único e acompanhar a reserva em tempo real.';
-// const rafflePrice = 5;
-// const mbWayNumber = '910 907 034';
-// const mbWayQrImage = '/mb-way-qr.svg';
-// const bannerImage = '/raffle-banner.svg';
-
-// export default function Home() {
-//   const [entries, setEntries] = useState<RaffleEntry[]>([]);
-//   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-//   const [form, setForm] = useState({ name: '', phone: '', group: '' });
-//   const [message, setMessage] = useState('');
-//   const [timer, setTimer] = useState(reserveDuration);
-//   const [proofFile, setProofFile] = useState<File | null>(null);
-//   const [reservedEntry, setReservedEntry] = useState<RaffleEntry | null>(null);
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-
-//   const refreshEntries = async () => {
-//     try {
-//       const res = await fetch('/api/google-sheets', { cache: 'no-store' });
-//       if (!res.ok) {
-//         setEntries([]);
-//         return;
-//       }
-
-//       const text = await res.text();
-//       if (!text) {
-//         setEntries([]);
-//         return;
-//       }
-
-//       const data = JSON.parse(text);
-//       setEntries(data.entries || []);
-//     } catch {
-//       setEntries([]);
-//     }
-//   };
-
-//   useEffect(() => {
-//     void refreshEntries();
-//   }, []);
-
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       setTimer((value) => (value > 0 ? value - 1 : 0));
-//     }, 1000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       refreshEntries();
-//     }, 5000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   const isAvailable = (number: number) => !entries.some((entry) => entry.number === number && (entry.status === 'reserved' || entry.status === 'paid' || entry.status === 'pending'));
-
-//   const handleReserve = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setIsSubmitting(true);
-//     const res = await fetch('/api/google-sheets', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({ number: selectedNumber, ...form }),
-//     });
-
-//     let data: { error?: string; entry?: RaffleEntry } = {};
-//     try {
-//       data = await res.json();
-//     } catch {
-//       data = {};
-//     }
-
-//     setIsSubmitting(false);
-//     if (res.ok) {
-//       setReservedEntry(data.entry || null);
-//       setMessage('O seu número está reservado por 30 minutos. Efetue o pagamento para garantir a reserva.');
-//       setTimer(reserveDuration);
-//       await refreshEntries();
-//     } else {
-//       setMessage(data.error || 'Não foi possível reservar.');
-//     }
-//   };
-
-//   const handleUpload = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!proofFile || !reservedEntry) return;
-//     const formData = new FormData();
-//     formData.append('file', proofFile);
-//     formData.append('number', String(reservedEntry.number));
-//     const res = await fetch('/api/upload', { method: 'POST', body: formData });
-//     let data: { error?: string } = {};
-//     try {
-//       data = await res.json();
-//     } catch {
-//       data = {};
-//     }
-
-//     if (res.ok) {
-//       setMessage('Comprovativo enviado. A reserva continua válida e aguarda confirmação.');
-//       await refreshEntries();
-//     } else {
-//       setMessage(data.error || 'Não foi possível enviar o comprovativo.');
-//     }
-//   };
-
-//   const formatTime = (seconds: number) => {
-//     const mins = Math.floor(seconds / 60)
-//       .toString()
-//       .padStart(2, '0');
-//     const secs = (seconds % 60).toString().padStart(2, '0');
-//     return `${mins}:${secs}`;
-//   };
-
-//   return (
-//     <main className='min-h-screen bg-[#FFFFFF] text-[#111111]'>
-//       <section className='mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-10'>
-//         <div className='overflow-hidden rounded-[2rem] border border-[#E5E5E5] bg-[#111111] text-white shadow-sm'>
-//           <div className='grid gap-6 p-6 md:grid-cols-[1.2fr_0.8fr] md:p-10'>
-//             <div className='flex flex-col justify-center gap-4'>
-//               <p className='text-sm uppercase tracking-[0.35em] text-[#E5E5E5]'>Rifa online</p>
-//               <h1 className='text-3xl font-semibold md:text-5xl'>{raffleTitle}</h1>
-//               <p className='max-w-xl text-base text-[#E5E5E5]'>{raffleDescription}</p>
-//               <Link
-//                 href={siteConfig.adminSecretPath}
-//                 className='inline-flex w-fit items-center rounded-full border border-[#E5E5E5] px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10'
-//               >
-//                 Painel administrativo
-//               </Link>
-//               <div className='flex flex-wrap gap-3'>
-//                 <span className='rounded-full border border-[#E5E5E5] px-4 py-2 text-sm'>Valor: {rafflePrice}€ por número</span>
-//                 <span className='rounded-full bg-[#C1121F] px-4 py-2 text-sm'>100 números disponíveis</span>
-//               </div>
-//             </div>
-//             <div className='relative h-64 overflow-hidden rounded-[1.5rem] bg-white/10 md:h-full'>
-//               <Image src={bannerImage} alt='Imagem da rifa' fill className='object-cover' />
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className='rounded-[2rem] border border-[#E5E5E5] bg-white p-4 shadow-sm md:p-8'>
-//           <div className='mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between'>
-//             <div>
-//               <h2 className='text-2xl font-semibold'>Escolha o seu número</h2>
-//               <p className='text-sm text-zinc-600'>Clique num número para reservar. Os números reservados ficam em vermelho e os pagos em preto.</p>
-//             </div>
-//             <div className='flex gap-2 text-sm'>
-//               <span className='rounded-full border border-[#E5E5E5] px-3 py-1'>Disponível</span>
-//               <span className='rounded-full bg-[#C1121F] px-3 py-1 text-white'>Reservado</span>
-//               <span className='rounded-full bg-[#111111] px-3 py-1 text-white'>Pago</span>
-//             </div>
-//           </div>
-
-//           <div className='grid grid-cols-5 gap-2 md:grid-cols-10'>
-//             {numberPool.map((number) => {
-//               const entry = entries.find((item) => item.number === number);
-//               const state = entry?.status === 'paid' ? 'paid' : entry?.status === 'reserved' || entry?.status === 'pending' ? 'reserved' : 'available';
-//               return (
-//                 <button
-//                   key={number}
-//                   onClick={() => {
-//                     if (state !== 'available') {
-//                       setMessage('Este número já foi reservado ou vendido.');
-//                       return;
-//                     }
-//                     setSelectedNumber(number);
-//                     setMessage('');
-//                   }}
-//                   className={`aspect-square rounded-2xl border text-sm font-semibold transition ${state === 'paid' ? 'border-[#111111] bg-[#111111] text-white' : state === 'reserved' ? 'border-[#C1121F] bg-[#C1121F] text-white' : 'border-[#E5E5E5] bg-white text-[#111111]'}`}
-//                 >
-//                   {number}
-//                 </button>
-//               );
-//             })}
-//           </div>
-
-//           {message ? <p className='mt-4 rounded-2xl border border-[#E5E5E5] bg-[#F7F7F7] p-3 text-sm'>{message}</p> : null}
-
-//           {selectedNumber && isAvailable(selectedNumber) && !reservedEntry ? (
-//             <form onSubmit={handleReserve} className='mt-6 grid gap-3 rounded-[1.5rem] border border-[#E5E5E5] bg-[#FAFAFA] p-4 md:grid-cols-2'>
-//               <div className='md:col-span-2'>
-//                 <h3 className='text-xl font-semibold'>Reservar o número {selectedNumber}</h3>
-//                 <p className='text-sm text-zinc-600'>Preencha os dados abaixo para reservar este número por 30 minutos.</p>
-//               </div>
-//               <input
-//                 required
-//                 value={form.name}
-//                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-//                 placeholder='Nome completo'
-//                 className='rounded-2xl border border-[#E5E5E5] bg-white px-3 py-3'
-//               />
-//               <input
-//                 required
-//                 value={form.phone}
-//                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-//                 placeholder='Telemóvel'
-//                 className='rounded-2xl border border-[#E5E5E5] bg-white px-3 py-3'
-//               />
-//               <input
-//                 required
-//                 value={form.group}
-//                 onChange={(e) => setForm({ ...form, group: e.target.value })}
-//                 placeholder='Grupo'
-//                 className='rounded-2xl border border-[#E5E5E5] bg-white px-3 py-3 md:col-span-2'
-//               />
-//               <button type='submit' disabled={isSubmitting} className='rounded-2xl bg-[#111111] px-4 py-3 font-semibold text-white md:col-span-2'>
-//                 {isSubmitting ? 'A reservar...' : 'Reservar número'}
-//               </button>
-//             </form>
-//           ) : null}
-
-//           {reservedEntry ? (
-//             <div className='mt-6 grid gap-4 rounded-[1.5rem] border border-[#E5E5E5] bg-[#FAFAFA] p-4 lg:grid-cols-[0.8fr_1.2fr]'>
-//               <div className='rounded-[1.25rem] bg-[#111111] p-5 text-white'>
-//                 <p className='text-sm uppercase tracking-[0.3em] text-[#E5E5E5]'>Pagamento MB Way</p>
-//                 <h3 className='mt-2 text-2xl font-semibold'>{mbWayNumber}</h3>
-//                 <p className='mt-3 text-sm text-[#E5E5E5]'>Valor: {rafflePrice}€</p>
-//                 <div className='mt-4 flex items-center justify-center rounded-[1.25rem] bg-white p-4'>
-//                   <Image src={mbWayQrImage} alt='QR Code MB Way' width={180} height={180} />
-//                 </div>
-//                 <button onClick={() => navigator.clipboard.writeText(mbWayNumber)} className='mt-4 w-full rounded-2xl bg-[#C1121F] px-4 py-3 font-semibold text-white'>
-//                   Copiar número MB Way
-//                 </button>
-//               </div>
-//               <div className='flex flex-col gap-3'>
-//                 <div className='rounded-[1.25rem] border border-[#E5E5E5] bg-white p-4'>
-//                   <p className='text-sm uppercase tracking-[0.3em] text-[#E5E5E5]'>Reserva ativa</p>
-//                   <h3 className='text-xl font-semibold'>Número {reservedEntry.number}</h3>
-//                   <p className='mt-2 text-sm'>
-//                     Tempo restante: <span className='font-semibold'>{formatTime(timer)}</span>
-//                   </p>
-//                   <p className='mt-2 text-sm'>Envia o comprovativo após pagar para aguardar confirmação.</p>
-//                 </div>
-//                 <form onSubmit={handleUpload} className='rounded-[1.25rem] border border-[#E5E5E5] bg-white p-4'>
-//                   <label className='mb-2 block text-sm font-semibold'>Enviar comprovativo</label>
-//                   <input
-//                     type='file'
-//                     accept='image/jpeg,image/png,application/pdf'
-//                     onChange={(e) => setProofFile(e.target.files?.[0] || null)}
-//                     className='w-full rounded-2xl border border-[#E5E5E5] bg-[#FAFAFA] p-3'
-//                   />
-//                   <button type='submit' className='mt-3 w-full rounded-2xl bg-[#111111] px-4 py-3 font-semibold text-white'>
-//                     Enviar comprovativo
-//                   </button>
-//                 </form>
-//               </div>
-//             </div>
-//           ) : null}
-//         </div>
-//       </section>
-//     </main>
-//   );
-// }
-
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
 import Image from 'next/image';
 import { supabase } from '../lib/supabaseClient';
@@ -275,7 +13,7 @@ export default function Home() {
   const [numeroSelecionado, setNumeroSelecionado] = useState<number | null>(null);
   const [etapa, setEtapa] = useState<Etapa>('selecao');
   const [formData, setFormData] = useState<FormDataReserva>({ nome: '', telemovel: '', grupo: '' });
-  const [tempoRestante, setTempoRestante] = useState<number>(1800);
+  const [tempoRestante, setTempoRestante] = useState<number>(180);
   const [ficheiro, setFicheiro] = useState<File | null>(null);
   const [carregando, setCarregando] = useState<boolean>(false);
   const [mensagemStatus, setMensagemStatus] = useState<string>('');
@@ -295,20 +33,38 @@ export default function Home() {
     };
   }, []);
 
+  // 1. Chamar a função de limpeza no Supabase via RPC quando o tempo expira no cliente
+  async function libertarReservaExpirada(numero: number) {
+    // Executa a função SQL remota (que tem permissões de admin)
+    await supabase.rpc('limpar_reservas_expiradas');
+    resetarEstado();
+  }
+
+  // 2. Temporizador ajustado
   useEffect(() => {
     let timer: NodeJS.Timeout;
+
     if (etapa === 'pagamento' && tempoRestante > 0) {
       timer = setInterval(() => {
         setTempoRestante((prev) => prev - 1);
       }, 1000);
-    } else if (tempoRestante === 0 && etapa === 'pagamento') {
-      alert('A sua reserva de 30 minutos expirou.');
-      resetarEstado();
+    } else if (etapa === 'pagamento' && tempoRestante <= 0) {
+      alert('A sua reserva de 3 minutos expirou.');
+
+      if (numeroSelecionado) {
+        libertarReservaExpirada(numeroSelecionado);
+      } else {
+        resetarEstado();
+      }
     }
+
     return () => clearInterval(timer);
-  }, [etapa, tempoRestante]);
+  }, [etapa, tempoRestante, numeroSelecionado]);
 
   async function carregarRifas(): Promise<void> {
+    // Tenta limpar reservas expiradas antes de ir buscar os dados atualizados
+    await supabase.rpc('limpar_reservas_expiradas');
+
     const { data, error } = await supabase.from('rifas').select('*').order('numero', { ascending: true });
 
     if (!error && data) {
@@ -320,7 +76,7 @@ export default function Home() {
     setNumeroSelecionado(null);
     setEtapa('selecao');
     setFormData({ nome: '', telemovel: '', grupo: '' });
-    setTempoRestante(1800);
+    setTempoRestante(180);
     setFicheiro(null);
     setCarregando(false);
   }
@@ -358,7 +114,7 @@ export default function Home() {
       alert('Erro ao reservar o número. Pode já ter sido selecionado por outra pessoa.');
       resetarEstado();
     } else {
-      setTempoRestante(1800);
+      setTempoRestante(180);
       setEtapa('pagamento');
     }
   }
@@ -394,7 +150,7 @@ export default function Home() {
   }
 
   return (
-    <div className='min-h-screen bg-[#111111] text-[#FFFFFF] font-sans'>
+    <div className='content-wrapper min-h-screen bg-[#111111] text-[#FFFFFF] font-sans'>
       <header className='max-w-4xl mx-auto pt-8 px-4 text-center'>
         <div className='relative w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 border border-[#E5E5E5]/20'>
           <Image src={rifaConfig.imagemBanner} alt='Banner Rifa' layout='fill' objectFit='cover' priority />
@@ -403,6 +159,11 @@ export default function Home() {
         <p className='text-[#E5E5E5] text-base md:text-lg mb-4 max-w-2xl mx-auto'>{rifaConfig.descricao}</p>
         <div className='inline-block bg-[#C1121F] text-[#FFFFFF] px-6 py-2 rounded-full font-bold text-xl shadow-lg mb-8'>Preço por número: {rifaConfig.preco}€</div>
       </header>
+
+      <div className='side-bar bar-left'></div>
+      <div className='side-bar bar-left-2'></div>
+      <div className='side-bar bar-right'></div>
+      <div className='side-bar bar-right-2'></div>
 
       <main className='max-w-4xl mx-auto px-4 pb-16'>
         <div className='bg-[#FFFFFF] text-[#111111] p-6 rounded-2xl shadow-2xl'>
