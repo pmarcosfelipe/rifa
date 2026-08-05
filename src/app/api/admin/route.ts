@@ -1,4 +1,5 @@
-// import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+
 // import bcrypt from 'bcryptjs';
 // import { siteConfig } from '@/lib/config';
 // import { writeGoogleSheetsEntry } from '@/lib/googleSheets';
@@ -46,3 +47,7 @@
 
 //   return NextResponse.json({ error: 'Ação inválida' }, { status: 400 });
 // }
+
+export async function GET() {
+  return NextResponse.json({ message: 'Route temporarily disabled' }, { status: 503 });
+}

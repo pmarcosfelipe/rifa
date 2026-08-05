@@ -1,4 +1,4 @@
-// import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 // import { siteConfig } from '@/lib/config';
 // import { fetchGoogleSheetsEntries, type RaffleEntry, writeGoogleSheetsEntry } from '@/lib/googleSheets';
 
@@ -78,3 +78,7 @@
 //     return NextResponse.json({ error: error instanceof Error ? error.message : 'Número indisponível' }, { status: 400 });
 //   }
 // }
+
+export async function GET() {
+  return NextResponse.json({ message: 'Route temporarily disabled' }, { status: 503 });
+}
