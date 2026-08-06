@@ -81,10 +81,15 @@ export default function Home() {
   }
 
   function handleCliqueNumero(item: RifaItem): void {
-    if (item.estado !== 'disponivel') {
-      toast.info('Este número já foi reservado ou vendido.');
+    if (item.estado === 'confirmado') {
       return;
     }
+
+    if (item.estado === 'reservado') {
+      toast.info('Este número já foi reservado');
+      return;
+    }
+
     setNumeroSelecionado(item.numero);
     setEtapa('formulario');
   }
