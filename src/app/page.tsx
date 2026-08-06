@@ -17,7 +17,7 @@ export default function Home() {
   const [formData, setFormData] = useState<FormDataReserva>({ nome: '', telemovel: '', grupo: '' });
 
   // 30 minutos em segundos = 1800 (Ajustado para coincidir com o texto do modal)
-  const TEMPO_RESERVA = 1800;
+  const TEMPO_RESERVA = 180;
   const [tempoRestante, setTempoRestante] = useState<number>(TEMPO_RESERVA);
 
   const [ficheiro, setFicheiro] = useState<File | null>(null);
