@@ -22,10 +22,16 @@ body {
   box-sizing: border-box;
 }
 
-.content-wrapper {
-  /* position: relative; */
-  /* z-index: 1; */
-}
+/* .Toastify__toast-container {
+  .Toastify__progress-bar-theme--dark {
+    background: #ffffff;
+  }
+} */
+
+/* .content-wrapper {
+  position: relative;
+  z-index: 1;
+} */
 
 /* .content-wrapper::before {
   content: '';
